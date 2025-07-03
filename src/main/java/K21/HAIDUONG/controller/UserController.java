@@ -8,11 +8,12 @@ import K21.HAIDUONG.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/user")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,6 +28,8 @@ public class UserController {
     }
 
     @GetMapping()
+
+    //@PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<UserCreationResponse>> getAllUser() {
         return userService.getAll();
     }

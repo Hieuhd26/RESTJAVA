@@ -12,3 +12,4 @@ app:
   default-admin:
     username: admin
     password: admin
+  secreteKey: a3f7e29c8b01d45e6f32c890bcd5f8123a8b4d67e1021f45c89a3b2e7d401c9e

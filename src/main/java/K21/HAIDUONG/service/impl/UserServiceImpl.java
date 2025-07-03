@@ -14,12 +14,14 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -52,6 +54,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse<List<UserCreationResponse>> getAll() {
         List<User> users = userRepository.findAll();
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Current user: {}", authentication.getName());
+        authentication.getAuthorities().forEach(auth -> log.info(auth.getAuthority()));
+
         List<UserCreationResponse> userCreationResponses = users.stream().map(user -> userMapper.toUserCreationResponse(user)).toList();
         return ApiResponse.<List<UserCreationResponse>>builder()
                 .result(userCreationResponses).build();
@@ -82,7 +89,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse<UserCreationResponse> getUserById(Long id) {
+        // KIEM TRA CHI TRA VE THONG TIN NGUOI DANG DANG NHAP
+        String currentName = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        if(!user.getUsername().equals(currentName)){
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
         UserCreationResponse userCreationResponse = userMapper.toUserCreationResponse(user);
         return ApiResponse.<UserCreationResponse>builder()
                 .result(userCreationResponse)
